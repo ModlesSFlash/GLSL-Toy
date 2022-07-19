@@ -9,3 +9,7 @@
 
 # build intermediates
 bin-intermediates/
+
+# flushed emoji
+nudes/
+*.png

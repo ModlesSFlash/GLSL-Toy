@@ -1,3 +1,10 @@
+-- pretty much the script from The Cherno's video about premake for his game engine
+-- https://youtu.be/sULV3aB2qeU
+
+-- i might premake the make... uh? i might make the premake file work on linux/mac as well but i'm no expert and i have no clue about nuances of these systems
+-- would appreciate some help regarding non-windows library names etc
+-- you could just point at something and tell me "THAT won't work on linux, but THIS should" etc
+
 workspace "GLSL-Toy"
 	architecture "x64"
 
@@ -37,10 +44,10 @@ project "GLSL-Toy"
 
 	links 
 	{
-		"glew32s", -- static lib so no need to copy the dll into the bin folder
-		"glfw3dll",
-		"OpenGL32",
-		"GLu32"
+		"glew32s",  -- glew; 's' stands for 'static', meaning that i don't need to copy the dll into the 'bin' folder
+		"glfw3dll", -- glfw;
+		"OpenGL32", -- opengl; only works for windows, on mac/linux "GL" should work but don't quote me on that
+		"GLu32"     -- glu; same thing here, the file should be called "libGLU.so" or smth, so try "GLU"
 	}
 
 	postbuildcommands
