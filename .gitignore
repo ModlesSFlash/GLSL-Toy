@@ -1,0 +1,10 @@
+# VS files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# build intermediates
+bin-intermediates/
