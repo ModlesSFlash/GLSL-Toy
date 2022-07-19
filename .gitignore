@@ -5,6 +5,7 @@
 *.userosscache
 *.sln.docstates
 .vs/
+.git/
 
 # build intermediates
 bin-intermediates/

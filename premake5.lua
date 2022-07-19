@@ -1,4 +1,4 @@
-workspace "bubble-cum"
+workspace "GLSL-Toy"
 	architecture "x64"
 
 	configurations
@@ -10,8 +10,8 @@ workspace "bubble-cum"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-project "bubble-cum"
-	location "bubble-cum"
+project "GLSL-Toy"
+	location "GLSL-Toy"
 	kind "ConsoleApp"
 	language "C++"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -25,51 +25,28 @@ project "bubble-cum"
 
 	includedirs
 	{
-		"%{prj.name}/vendor/SDL2-2.0.14-VC/include",
-		"%{prj.name}/vendor/SDL2_ttf-2.0.15/include"
+		"%{prj.name}/vendor/glew-2.1.0/include",
+		"%{prj.name}/vendor/glfw-3.3.4.bin.WIN64/include"
 	}
 
 	libdirs
 	{
-		"%{prj.name}/vendor/SDL2-2.0.14-VC/lib/x64",
-		"%{prj.name}/vendor/SDL2_ttf-2.0.15/lib/x64"
+		"%{prj.name}/vendor/glew-2.1.0/lib/Release/x64",
+		"%{prj.name}/vendor/glfw-3.3.4.bin.WIN64/lib-static-ucrt"
 	}
 
 	links 
 	{
-		"SDL2",
-		"SDL2main",
-		"SDL2_ttf"
+		"glew32s", -- static lib so no need to copy the dll into the bin folder
+		"glfw3dll",
+		"OpenGL32",
+		"GLu32"
 	}
-	
+
 	postbuildcommands
 	{
-		"{COPYFILE} \"%{prj.location}vendor/SDL2-2.0.14-VC/lib/x64/SDL2.dll\"           \"%{cfg.buildtarget.directory}\"",
-		"{COPYFILE} \"%{prj.location}vendor/SDL2_ttf-2.0.15/lib/x64/SDL2_ttf.dll\"      \"%{cfg.buildtarget.directory}\"",
-		"{COPYFILE} \"%{prj.location}vendor/SDL2_ttf-2.0.15/lib/x64/zlib1.dll\"         \"%{cfg.buildtarget.directory}\"",
-		"{COPYFILE} \"%{prj.location}vendor/SDL2_ttf-2.0.15/lib/x64/libfreetype-6.dll\" \"%{cfg.buildtarget.directory}\"",
-		"{COPYFILE} \"%{prj.location}vendor/fonts/Novem.ttf\"                           \"%{cfg.buildtarget.directory}\""
+		"{COPYFILE} \"%{prj.location}vendor/glfw-3.3.4.bin.WIN64/lib-static-ucrt/glfw3.dll\"  \"%{cfg.buildtarget.directory}\""
 	}
-
-	filter "system:windows"
-		cppdialect "C++20"
-		staticruntime "On"
-		systemversion "latest"
-
-		defines
-		{
-			"MF_PLATFORM_WINDOWS"
-		}
-
-	filter "system:linux"
-		cppdialect "C++20"
-		staticruntime "On"
-		systemversion "latest"
-
-		defines
-		{
-			"MF_PLATFORM_LINUX"
-		}
 
 	filter "configurations:Debug"
 		defines "MF_DEBUG"
