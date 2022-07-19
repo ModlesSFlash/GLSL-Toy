@@ -44,7 +44,7 @@ project "GLSL-Toy"
 
 	links 
 	{
-		"glew32s",  -- glew; 's' stands for 'static', meaning that i don't need to copy the dll into the 'bin' folder
+		"glew32",   -- glew;
 		"glfw3dll", -- glfw;
 		"OpenGL32", -- opengl; only works for windows, on mac/linux "GL" should work but don't quote me on that
 		"GLu32"     -- glu; same thing here, the file should be called "libGLU.so" or smth, so try "GLU"
@@ -52,7 +52,8 @@ project "GLSL-Toy"
 
 	postbuildcommands
 	{
-		"{COPYFILE} \"%{prj.location}vendor/glfw-3.3.4.bin.WIN64/lib-static-ucrt/glfw3.dll\"  \"%{cfg.buildtarget.directory}\""
+		"{COPYFILE} \"%{prj.location}vendor/glfw-3.3.4.bin.WIN64/lib-static-ucrt/glfw3.dll\"  \"%{cfg.buildtarget.directory}\"",
+		"{COPYFILE} \"%{prj.location}vendor/glew-2.1.0/bin/Release/x64/glew32.dll\"           \"%{cfg.buildtarget.directory}\""
 	}
 
 	filter "configurations:Debug"

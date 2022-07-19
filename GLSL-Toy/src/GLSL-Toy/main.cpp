@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <cstdlib>
 #include <iostream>
+#include <string>
 
 #ifndef MF_DIST
 #define MF_LOG(x) x
@@ -10,8 +11,13 @@
 #define MF_LOG(x)
 #endif
 
-#define WIDTH  1280;
-#define HEIGHT 720;
+#define WIDTH  1280
+#define HEIGHT 720
+
+struct App
+{
+    bool quit;
+} g_app;
 
 void update()
 {
@@ -26,19 +32,148 @@ void render()
 {
 	MF_LOG(auto buf_time = std::chrono::high_resolution_clock::now());
 
-	//stuff
+    
 
 	MF_LOG(std::cout << "render() took " << (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - buf_time).count()) / 1000000.f << "\tms\n");
 }
 
+GLuint get_compiled_shader(const char* shader_code, const GLuint& shader_type)
+{
+    GLuint shader = glCreateShader(shader_type);
+    glShaderSource(shader, 1, &shader_code, nullptr); // what the hell is the 4th argument
+    glCompileShader(shader);
+
+    GLint result;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+    if (result == GL_FALSE)
+    {
+        int length;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+
+        GLchar* info_log = new GLchar[length + 1];
+        glGetShaderInfoLog(shader, length, &length, info_log);
+
+        std::cout << info_log << std::endl;
+        delete[] info_log;
+    }
+    return shader;
+}
+
+void recompile_shader()
+{
+
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_R && action == GLFW_PRESS)
+        recompile_shader();
+    else if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        g_app.quit = true;
+}
+
 int main(int argc, char** argv)
 {
-	/*
-	while (true)
+    GLFWwindow* window;
+
+    if (!glfwInit())
+        return -1;
+
+    window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", NULL, NULL); // how do i make it borderless and run on top?
+    if (!window)
+    {
+        glfwTerminate();
+        return -1;
+    }
+
+    glfwMakeContextCurrent(window);
+
+    GLenum err = glewInit();
+    if (GLEW_OK != err)
+    {
+        std::cout << "Error: " << glewGetErrorString(err) << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    char const* frag_shader_text = R"GLSL(
+	#version 150
+	out vec4 outColor;
+	void main()
 	{
-		update();
-		render();
+        vec2 fragCoord = gl_FragCoord.xy / vec2(1280.f, 720.f);
+        //fragCoord -= fragCoord;
+		outColor = vec4(fragCoord.xy, 0.0, 1.0);
 	}
-	*/
+	)GLSL";
+
+    const char* vert_shader_text = R"GLSL(
+    #version 450
+    in vec2 position;
+    void main()
+    {
+        gl_Position = vec4(position, 0.0, 1.0);
+    }
+    )GLSL";
+
+    
+    GLfloat const vertices[] = {-1.0f,  -1.0f,
+                                -1.0f,   1.0f,
+                                 1.0f,   1.0f,
+                                 1.0f,  -1.0f };
+
+    GLint const elements[] = { 0, 1, 2, 0, 2, 3 };
+
+    GLuint VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    GLuint VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLuint EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+
+    GLuint vert_shader = get_compiled_shader(vert_shader_text, GL_VERTEX_SHADER);
+    GLuint frag_shader = get_compiled_shader(frag_shader_text, GL_FRAGMENT_SHADER);
+
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vert_shader);
+    glAttachShader(program, frag_shader);
+    glBindFragDataLocation(program, 0, "outColor");
+    glLinkProgram(program); // what does it mean to link a program?
+    glUseProgram(program);
+    glDeleteShader(vert_shader);
+    glDeleteShader(frag_shader);
+
+    GLint pos_attrib = glGetAttribLocation(program, "position");
+    glEnableVertexAttribArray(pos_attrib);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(pos_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    while (!glfwWindowShouldClose(window) && !g_app.quit)
+    {
+        glfwSetKeyCallback(window, key_callback);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+ 
+    glDeleteProgram(program);
+    glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &VAO);
+
+    glfwTerminate();
+    glfwDestroyWindow(window);
+
 	return 0;
 }
