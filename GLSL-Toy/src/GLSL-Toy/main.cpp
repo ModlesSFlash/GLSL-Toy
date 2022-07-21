@@ -97,7 +97,7 @@ int main(int argc, char** argv)
     }
 
     char const* frag_shader_text = R"GLSL(
-	#version 150
+	#version 450
 	out vec4 outColor;
 	void main()
 	{
@@ -114,54 +114,64 @@ int main(int argc, char** argv)
     {
         gl_Position = vec4(position, 0.0, 1.0);
     }
-    )GLSL";
-
-    
-    GLfloat const vertices[] = {-1.0f,  -1.0f,
-                                -1.0f,   1.0f,
-                                 1.0f,   1.0f,
-                                 1.0f,  -1.0f };
-
-    GLint const elements[] = { 0, 1, 2, 0, 2, 3 };
-
-    GLuint VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    GLuint VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    GLuint EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+    )GLSL";   
 
     GLuint vert_shader = get_compiled_shader(vert_shader_text, GL_VERTEX_SHADER);
     GLuint frag_shader = get_compiled_shader(frag_shader_text, GL_FRAGMENT_SHADER);
 
+    GLuint VAO, VBO, EBO;
+
+    // not sure what is this for exactly since the thing works without it anyway, but i guess it's needed for storing configurations for different vertex arrays or smth
+    glGenVertexArrays(1, &VAO);
+
+    // need that for storing vertices in the GPU memory, google the purpose of VBO (Vertex Buffer Object)
+    glGenBuffers(1, &VBO);
+
+    // need that for drawing the triangle with only 4 vertices instead of 6, google the purpose of EBO or IBO (Element Buffer Object or Index Buffer Object)
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO); // use VAO
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        {
+            GLfloat const vertices[] = { -1.0f,  -1.0f,  // 0
+                                         -1.0f,   1.0f,  // 1
+                                          1.0f,   1.0f,  // 2
+                                          1.0f,  -1.0f };// 3
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // pass the data from array to GPU mem. 'STATIC' since we're never gonna change these vertices
+            GLint pos_attrib = 0; // glGetAttribLocation(program, "position") ;
+            glVertexAttribPointer(pos_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+            glEnableVertexAttribArray(pos_attrib);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        {
+            GLint const elements[] = { 0, 1, 2, 0, 2, 3 }; // order of passing vertices into the vertex shader, corresponding to the IDs written near the vertices
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW); // pass the data from array to GPU mem. 'STATIC' for the same reason stated above
+        }
+        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); / DO NOT unbind EBO if you're inside the bound VAO
+    }
+    glBindVertexArray(0);
+
     GLuint program = glCreateProgram();
     glAttachShader(program, vert_shader);
     glAttachShader(program, frag_shader);
-    glBindFragDataLocation(program, 0, "outColor");
+    //glBindFragDataLocation(program, 0, "outColor");
     glLinkProgram(program); // what does it mean to link a program?
-    glUseProgram(program);
     glDeleteShader(vert_shader);
     glDeleteShader(frag_shader);
-
-    GLint pos_attrib = glGetAttribLocation(program, "position");
-    glEnableVertexAttribArray(pos_attrib);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(pos_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     while (!glfwWindowShouldClose(window) && !g_app.quit)
     {
         glfwSetKeyCallback(window, key_callback);
+        
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        
+        glUseProgram(program);
+        glBindVertexArray(VAO);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
