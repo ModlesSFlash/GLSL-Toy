@@ -19,4 +19,8 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="src\GLSL-Toy\shaders\frag_shader.glsl" />
+    <None Include="src\GLSL-Toy\shaders\vert_shader.glsl" />
+  </ItemGroup>
 </Project>

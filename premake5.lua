@@ -52,9 +52,17 @@ project "GLSL-Toy"
 
 	postbuildcommands
 	{
+		-- copy libs
 		"{COPYFILE} \"%{prj.location}vendor/glfw-3.3.4.bin.WIN64/lib-static-ucrt/glfw3.dll\"  \"%{cfg.buildtarget.directory}\"",
-		"{COPYFILE} \"%{prj.location}vendor/glew-2.1.0/bin/Release/x64/glew32.dll\"           \"%{cfg.buildtarget.directory}\""
+		"{COPYFILE} \"%{prj.location}vendor/glew-2.1.0/bin/Release/x64/glew32.dll\"           \"%{cfg.buildtarget.directory}\"",
+
+		-- copy shader files
+		"{MKDIR}																			  \"%{cfg.buildtarget.directory}/shaders\"",
+		"{COPYDIR}  \"%{prj.location}src/GLSL-Toy/shaders\"                                   \"%{cfg.buildtarget.directory}/shaders\""
 	}
+
+	-- tried to change the working directory, doesn't really work, will update this off-stream if i find a solution
+	-- debugdir "%{cfg.buildtarget.directory}"
 
 	filter "configurations:Debug"
 		defines "MF_DEBUG"

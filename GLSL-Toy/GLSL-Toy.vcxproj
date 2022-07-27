@@ -90,7 +90,9 @@
     </Link>
     <PostBuildEvent>
       <Command>copy /B /Y "$(ProjectDir)vendor\glfw-3.3.4.bin.WIN64\lib-static-ucrt\glfw3.dll"  "$(TargetDir)"
-copy /B /Y "$(ProjectDir)vendor\glew-2.1.0\bin\Release\x64\glew32.dll"           "$(TargetDir)"</Command>
+copy /B /Y "$(ProjectDir)vendor\glew-2.1.0\bin\Release\x64\glew32.dll"           "$(TargetDir)"
+IF NOT EXIST "$(TargetDir)\shaders" (mkdir "$(TargetDir)\shaders")
+xcopy /Q /E /Y /I "$(ProjectDir)src\GLSL-Toy\shaders"                                   "$(TargetDir)\shaders"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -114,7 +116,9 @@ copy /B /Y "$(ProjectDir)vendor\glew-2.1.0\bin\Release\x64\glew32.dll"          
     </Link>
     <PostBuildEvent>
       <Command>copy /B /Y "$(ProjectDir)vendor\glfw-3.3.4.bin.WIN64\lib-static-ucrt\glfw3.dll"  "$(TargetDir)"
-copy /B /Y "$(ProjectDir)vendor\glew-2.1.0\bin\Release\x64\glew32.dll"           "$(TargetDir)"</Command>
+copy /B /Y "$(ProjectDir)vendor\glew-2.1.0\bin\Release\x64\glew32.dll"           "$(TargetDir)"
+IF NOT EXIST "$(TargetDir)\shaders" (mkdir "$(TargetDir)\shaders")
+xcopy /Q /E /Y /I "$(ProjectDir)src\GLSL-Toy\shaders"                                   "$(TargetDir)\shaders"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -138,7 +142,9 @@ copy /B /Y "$(ProjectDir)vendor\glew-2.1.0\bin\Release\x64\glew32.dll"          
     </Link>
     <PostBuildEvent>
       <Command>copy /B /Y "$(ProjectDir)vendor\glfw-3.3.4.bin.WIN64\lib-static-ucrt\glfw3.dll"  "$(TargetDir)"
-copy /B /Y "$(ProjectDir)vendor\glew-2.1.0\bin\Release\x64\glew32.dll"           "$(TargetDir)"</Command>
+copy /B /Y "$(ProjectDir)vendor\glew-2.1.0\bin\Release\x64\glew32.dll"           "$(TargetDir)"
+IF NOT EXIST "$(TargetDir)\shaders" (mkdir "$(TargetDir)\shaders")
+xcopy /Q /E /Y /I "$(ProjectDir)src\GLSL-Toy\shaders"                                   "$(TargetDir)\shaders"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
