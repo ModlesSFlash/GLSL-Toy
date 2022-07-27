@@ -1,8 +1,7 @@
 # GLSL Toy
 ## public notes
 **probably important things to mention**
-- this was recorded and is to be nicely(?) edited for an youtube vid
-- ~~not so sure about a github repo, is there even a point?~~ the github repo is ready for the project
+- coding streams for this were recorded and are to be nicely(?) edited for an youtube vid
 ## roadmap or smth
 - [DONE] set up premake5 with includes and shit
 - [DONE] code to run opengl window
