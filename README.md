@@ -1,19 +1,6 @@
-# GLSL Toy
-## public notes
-**probably important things to mention**
-- coding streams for this were recorded and are to be nicely(?) edited for an youtube vid
-## roadmap or smth
-- [DONE] set up premake5 with includes and shit
-- [DONE] code to run opengl window
-- [DONE] ESC, F5, R hotkeys, check if they work (output smth to console or close the window for ESC)
-- [DONE] sample code to compile and run shader inside string var
-- [DONE] modify window to be run on top of everything (GLFW_FLOATING?)
-- (optional but preferred) modify window to be run without borders (not gonna work idk)
-- [DONE] code to read shader from file; moving the shader from string var to file
-- [DONE] add uTime uniform
-- [DONE] code to recompile and run an updated shader, tested with F5 and CTRL+R hotkeys
-- can give up here but making a semi-transparent text editor on top of a running shader would be an amazing optimization trip and a quite useful addition for future videos/streams 
+# check the branches for session(stream)-specific snapshots
 
+# GLSL Toy
 ## final product
 #### the goal (achieved)
 	drawing a compiled-at-runtime shader  
