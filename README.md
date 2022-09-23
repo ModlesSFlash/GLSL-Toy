@@ -1,7 +1,4 @@
 # GLSL Toy
-## public notes
-**probably important things to mention**
-- coding streams for this were recorded and are to be nicely(?) edited for an youtube vid
 ## roadmap or smth
 - [DONE] set up premake5 with includes and shit
 - [DONE] code to run opengl window
