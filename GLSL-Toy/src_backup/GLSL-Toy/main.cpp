@@ -18,13 +18,25 @@ Release:    defines MF_RELEASE, has optimization    AND debug logs made with MF_
 Debug:      defines MF_DEBUG,   has dbg symbols     AND debug logs made with MF_LOG
 */
 
+void update()
+{
+    MF_LOG(auto buf_time = std::chrono::high_resolution_clock::now());
+
+    // do stuff
+
+    MF_LOG(std::cout 
+        << "update() took " 
+        << (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - buf_time).count()) / 1000000.f 
+        << "\tms\n");
+}
+
+#define WIDTH  640
+#define HEIGHT 480
+
 struct App
 {
     bool quit;
-
-    double shader_time; // since last shift+f5
-    double time;        // since app start
-    double buf_time;
+    double shader_time;
 
     GLuint shader_program;
     struct Shader_Cache
@@ -38,21 +50,6 @@ struct App
         std::string frag_shader_path;
     } shader_path_cache;
 } g_app;
-
-void update()
-{
-    MF_LOG(auto buf_time = std::chrono::high_resolution_clock::now());
-
-    // do stuff
-
-    MF_LOG(std::cout
-        << "update() took "
-        << (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - buf_time).count()) / 1000000.f
-        << "\tms\n");
-}
-
-#define WIDTH  1920
-#define HEIGHT 1080
 
 GLuint get_compiled_shader_from_file(const std::string& shader_path, const GLuint& shader_type)
 {
@@ -70,13 +67,11 @@ GLuint get_compiled_shader_from_file(const std::string& shader_path, const GLuin
 
     std::cout << shader_code;
 
-    // compile
     const char* shader_code_c = shader_code.c_str();
     GLuint shader = glCreateShader(shader_type);
     glShaderSource(shader, 1, &shader_code_c, nullptr); // what the hell is the 4th argument
     glCompileShader(shader);
 
-    // check compile result for errors etc
     GLint result;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
     if (result == GL_FALSE)
@@ -107,16 +102,13 @@ void recompile_shaders()
     glDeleteShader(g_app.shader_cache.frag_shader);
 
     glUseProgram(g_app.shader_program);
+    glfwSetTime(0.0f);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if ((key == GLFW_KEY_R || key == GLFW_KEY_F5) && action == GLFW_PRESS)
-    {
         recompile_shaders();
-        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-            g_app.shader_time = 0.0f;
-    }
     else if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         g_app.quit = true;
 }
@@ -126,10 +118,10 @@ int main(int argc, char** argv)
     if (!glfwInit())
         return -1;
 
-    //glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);       // to make window run 'always on top'
-    glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);   // to make window run 'borderless'
+    glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);       // to make window run 'always on top'
+    //glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);   // to make window run 'borderless'
                                                     // ... though you can't move it at all if you do this bruv
-
+    
     GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", NULL, NULL);
     if (!window)
     {
@@ -146,6 +138,15 @@ int main(int argc, char** argv)
         glfwTerminate();
         return -1;
     }
+
+    // relative paths won't work in VS unless you change 'working directory' of your IDE to 'target dir'
+    // https://github.com/premake/premake-core/issues/392 -- this doesn't work does it
+
+    g_app.shader_path_cache.vert_shader_path = "shaders/vert_shader.glsl";
+    g_app.shader_path_cache.frag_shader_path = "shaders/frag_shader.glsl";
+
+    g_app.shader_cache.vert_shader = get_compiled_shader_from_file(g_app.shader_path_cache.vert_shader_path, GL_VERTEX_SHADER);
+    g_app.shader_cache.frag_shader = get_compiled_shader_from_file(g_app.shader_path_cache.frag_shader_path, GL_FRAGMENT_SHADER);
 
     GLuint VBO, EBO;
 
@@ -167,22 +168,13 @@ int main(int argc, char** argv)
         glEnableVertexAttribArray(pos_attrib);
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+        
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     {
         GLint const elements[] = { 0, 1, 2, 0, 2, 3 }; // order of passing vertices into the vertex shader, corresponding to the IDs written near the vertices
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW); // pass the data from array to GPU mem. 'STATIC' for the same reason stated above
     }
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // DO NOT unbind EBO if you're inside the bound VAO
-
-    // relative paths won't work in VS unless you change 'Working Directory' of your solution to '$(TargetDir)'
-    // https://github.com/premake/premake-core/issues/392 -- this doesn't work does it
-
-    g_app.shader_path_cache.vert_shader_path = "shaders/vert_shader.glsl";
-    g_app.shader_path_cache.frag_shader_path = "shaders/frag_shader.glsl";
-
-    g_app.shader_cache.vert_shader = get_compiled_shader_from_file(g_app.shader_path_cache.vert_shader_path, GL_VERTEX_SHADER);
-    g_app.shader_cache.frag_shader = get_compiled_shader_from_file(g_app.shader_path_cache.frag_shader_path, GL_FRAGMENT_SHADER);
 
     g_app.shader_program = glCreateProgram();
     glAttachShader(g_app.shader_program, g_app.shader_cache.vert_shader);
@@ -194,32 +186,18 @@ int main(int argc, char** argv)
     glUseProgram(g_app.shader_program);
 
     glfwSetKeyCallback(window, key_callback);
-
     // main loop
     while (!glfwWindowShouldClose(window) && !g_app.quit)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        MF_LOG(std::cout << glfwGetTime() << std::endl);
 
-        g_app.shader_time += g_app.time - g_app.buf_time;
-        g_app.buf_time = g_app.time;
-        g_app.time = glfwGetTime();
-
-        GLint uDeltaTime_location = glGetUniformLocation(g_app.shader_program, "uDeltaTime");
-        if (uDeltaTime_location == -1)
-            std::cout << "Error getting uniform location of uDeltaTime\n";
-        else
-        {
-            glUniform1f(uDeltaTime_location, (float)g_app.shader_time);
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        }
-
+        g_app.shader_time = glfwGetTime();
         GLint uTime_location = glGetUniformLocation(g_app.shader_program, "uTime");
         if (uTime_location == -1)
             std::cout << "Error getting uniform location of uTime\n";
         else
         {
-            glUniform1f(uTime_location, (float)g_app.time);
+            glUniform1f(uTime_location, (float)g_app.shader_time);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         }
 
@@ -227,14 +205,10 @@ int main(int argc, char** argv)
         glfwPollEvents();
     }
 
-    //glfwDestroyWindow(window); // not needed, glfwTerminate() will destroy it anyway
-                                 // All windows remaining when glfwTerminate is called are destroyed as well.
-                                 // src: https://www.glfw.org/docs/latest/window.html#window_destruction
-
-    glDeleteBuffers(1, &EBO);
-    glDeleteBuffers(1, &VBO);
     glDeleteShader(g_app.shader_cache.vert_shader);
     glDeleteProgram(g_app.shader_program);
+    glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &VBO);
 
     glfwTerminate();
     return 0;
